@@ -1,0 +1,41 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Run npm test
+        run: npm test
+      
+      - name: Run npm build
+        run: npm build
+  
+  create_release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create Release (Reusable Workflow)
+        uses: ./.github/workflows/create-release.yml
+        with:
+          version: ${{ github.event.inputs.version }}
